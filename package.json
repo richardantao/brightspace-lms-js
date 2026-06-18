@@ -1,0 +1,70 @@
+{
+	"name": "brightspace-client",
+	"version": "0.1.0",
+	"description": "API client wrapper to D2L's Brightspace REST API.",
+	"keywords": [
+		"Brightspace",
+		"D2L",
+		"API",
+		"client",
+		"wrapper",
+		"REST"
+	],
+	"homepage": "https://github.com/richardantao/brightspace-client-js#readme",
+	"bugs": {
+		"url": "https://github.com/richardantao/brightspace-client-js/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/richardantao/brightspace-client-js.git"
+	},
+	"license": "MIT",
+	"author": "Richard Antao",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"engines": {
+		"node": "24.x",
+		"npm": "11.x"
+	},
+	"files": [
+		"dist",
+		"!dist/**/*.map",
+		"README.md"
+	],
+	"scripts": {
+		"build": "pnpm build:js && pnpm build:types",
+		"build:js": "tsdown",
+		"build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+		"changeset": "changeset",
+		"dev": "tsdown --watch",
+		"prepublishOnly": "pnpm build && pnpm test && pnpm typecheck",
+		"release": "pnpm publish --access public --provenance --no-git-checks",
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit",
+		"version-packages": "changeset version"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "latest",
+		"@changesets/cli": "^2.30.0",
+		"@types/node": "^22.16.4",
+		"@vitest/coverage-v8": "^4.0.8",
+		"tsdown": "^0.12.8",
+		"typescript": "^6.0.2",
+		"vite": "^8.0.16",
+		"vitest": "^4.1.4"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}

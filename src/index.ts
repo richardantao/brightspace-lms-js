@@ -42,6 +42,10 @@ export { EnrollmentsResource } from "./resources/enrollments";
 export { CoursesResource } from "./resources/courses";
 export { GradesResource } from "./resources/grades";
 export { VersionsResource } from "./resources/versions";
+export { QuizzesResource } from "./resources/quizzes";
+export { DropboxesResource } from "./resources/dropboxes";
+export { AssessmentsResource } from "./resources/assessments";
+export { CalendarResource } from "./resources/calendar";
 
 export type {
 	// Users

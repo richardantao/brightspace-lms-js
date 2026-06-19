@@ -33,14 +33,14 @@ pnpm add brightspace-client
 ## Quick start
 
 ```ts
-import { BrightspaceClient } from "brightspace-client";
+import { BrightspaceClient, BearerTokenClient } from "brightspace-client";
 
 const client = new BrightspaceClient({
   host: "https://your-org.brightspace.com",
-  auth: {
+  auth: new BearerTokenClient({
     type: "bearer",
     token: process.env.BRIGHTSPACE_TOKEN!,
-  },
+  }),
 });
 
 const me = await client.users.whoami();
@@ -56,60 +56,86 @@ console.log(`Hello, ${me.FirstName}`);
 Use when you already have a valid access token — the simplest option for server-side scripts.
 
 ```ts
-auth: {
+auth: new BearerTokenClient({
   type: "bearer",
   token: process.env.BRIGHTSPACE_TOKEN!,
-}
+})
 ```
 
 ### OAuth2 — Authorization Code Grant
 
-For user-delegated flows. Provide an initial `code` after the user completes the authorization redirect, or a `refreshToken` for long-lived access. The client handles token exchange and refresh automatically.
+For user-delegated access. Use `OAuth2AuthorizationCodeClient` — construct one instance per request. Do not share a single instance across users; credentials are stored on the instance and are user-specific.
+
+**Returning session** — you have a `refreshToken` stored from a previous session:
 
 ```ts
-auth: {
+import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-client";
+
+const auth = new OAuth2AuthorizationCodeClient({
   type: "oauth2_authorization_code",
-  clientId: process.env.BRIGHTSPACE_CLIENT_ID!,
-  clientSecret: process.env.BRIGHTSPACE_CLIENT_SECRET!,
-  redirectUri: "https://app.example.com/oauth/callback",
-  code: "<authorization-code>",       // from redirect
-  // or: refreshToken: "<token>",      // for renewal
-  scope: "core:*:*",
-}
-```
-
-To generate the initial redirect URL:
-
-```ts
-import { OAuth2AuthProvider } from "brightspace-client";
-
-const provider = new OAuth2AuthProvider({
-  type: "oauth2_authorization_code",
-  clientId: "...",
-  clientSecret: "...",
+  clientId: process.env.D2L_CLIENT_ID!,
+  clientSecret: process.env.D2L_CLIENT_SECRET!,
   redirectUri: "https://app.example.com/oauth/callback",
   scope: "core:*:*",
 });
 
-const redirectUrl = provider.getAuthorizationUrl(stateToken);
-// Redirect the user's browser to redirectUrl
-// After consent, exchange the returned code:
-await provider.exchangeCode(req.query.code);
+auth.setCredentials({ refreshToken: session.refreshToken });
+
+const client = new BrightspaceClient({ host: process.env.D2L_HOST!, auth });
+const me = await client.users.whoami();
 ```
+
+**Fresh auth** — the user hasn't authorized yet:
+
+```ts
+import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-client";
+
+const authConfig = {
+  type: "oauth2_authorization_code" as const,
+  clientId: process.env.D2L_CLIENT_ID!,
+  clientSecret: process.env.D2L_CLIENT_SECRET!,
+  redirectUri: "https://app.example.com/oauth/callback",
+  scope: "core:*:*",
+};
+
+// Login route — generate the redirect URL
+const auth = new OAuth2AuthorizationCodeClient(authConfig);
+const state = crypto.randomUUID();
+session.oauthState = state;
+res.redirect(auth.generateAuthUrl(state));
+
+// Callback route — exchange the code
+const auth = new OAuth2AuthorizationCodeClient(authConfig);
+if (req.query.state !== session.oauthState) throw new Error("CSRF mismatch");
+const { tokens } = await auth.getToken(req.query.code);
+session.refreshToken = tokens.refreshToken; // persist for future requests
+
+const client = new BrightspaceClient({ host: process.env.D2L_HOST!, auth });
+const me = await client.users.whoami();
+```
+
+The shared thing across requests is the static config object — not the `OAuth2AuthorizationCodeClient` instance. Each request constructs a fresh instance and hydrates it with the user's stored `refreshToken`.
 
 ### OAuth2 — Client Credentials Grant
 
-For server-to-server integrations. D2L's client credentials flow uses JWT client assertions (not client secrets) — provide a PEM private key corresponding to a public key in your registered JWKS URL.
+For server-to-server integrations. Use `OAuth2ClientCredentialsClient` — safe to construct once at module level and share across requests, since all credentials are static configuration.
+
+D2L's client credentials flow uses JWT client assertions signed with a private key (not a client secret). Your JWKS URL must be publicly reachable over HTTPS.
 
 ```ts
-auth: {
+import { OAuth2ClientCredentialsClient, BrightspaceClient } from "brightspace-client";
+
+// Module level — safe to share across requests
+const auth = new OAuth2ClientCredentialsClient({
   type: "oauth2_client_credentials",
-  clientId: process.env.BRIGHTSPACE_CLIENT_ID!,
-  privateKey: process.env.BRIGHTSPACE_PRIVATE_KEY_PEM!,
-  keyId: process.env.BRIGHTSPACE_JWKS_KID!,
+  clientId: process.env.D2L_CLIENT_ID!,
+  privateKey: process.env.D2L_PRIVATE_KEY_PEM!,
+  keyId: process.env.D2L_KEY_ID!,
   algorithm: "RS256",   // RS256 | RS384 | RS512 | ES256 | ES384 | ES512
   scope: "core:*:*",
-}
+});
+
+const client = new BrightspaceClient({ host: process.env.D2L_HOST!, auth });
 ```
 
 See [D2L's OAuth2 documentation](https://docs.valence.desire2learn.com/basic/oauth2.html) for application registration steps and JWKS requirements.

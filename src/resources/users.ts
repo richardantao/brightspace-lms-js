@@ -4,6 +4,7 @@ import {
 	type PaginatedPageResponse,
 	CursorPaginatedList,
 } from "../core/paginated-list";
+import { buildQueryString } from "../core/utils";
 import type { PaginatedList } from "../types";
 
 // ---------------------------------------------------------------------------
@@ -293,17 +294,4 @@ export class UsersResource extends BaseResource {
 					: undefined,
 		};
 	}
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function buildQueryString(params: Record<string, string | undefined>): string {
-	const sp = new URLSearchParams();
-	for (const [k, v] of Object.entries(params)) {
-		if (v !== undefined) sp.set(k, v);
-	}
-	const qs = sp.toString();
-	return qs ? `?${qs}` : "";
 }

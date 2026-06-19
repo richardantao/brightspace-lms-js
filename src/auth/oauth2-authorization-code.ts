@@ -114,6 +114,7 @@ export class OAuth2AuthorizationCodeClient implements AuthProvider {
 
 		return {
 			tokens: {
+				// biome-ignore lint/style/noNonNullAssertion: Access token is guaranteed to be set if resolveToken() succeeds
 				accessToken: this.accessToken!,
 				expiresAt: this.expiresAt,
 				...(this.refreshToken ? { refreshToken: this.refreshToken } : {}),

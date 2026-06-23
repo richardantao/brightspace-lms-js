@@ -5,6 +5,7 @@ import {
 	type PaginatedPageResponse,
 	CursorPaginatedList,
 } from "../core/paginated-list";
+import { buildQueryString } from "../core/utils";
 
 // ---------------------------------------------------------------------------
 // Wire types — matched exactly to D2L Org Unit API response shapes
@@ -573,15 +574,4 @@ export class OrgUnitsResource extends BaseResource {
 					: undefined,
 		};
 	}
-}
-
-function buildQueryString(
-	params: Record<string, string | number | boolean | undefined>
-): string {
-	const sp = new URLSearchParams();
-	for (const [k, v] of Object.entries(params)) {
-		if (v !== undefined) sp.set(k, String(v));
-	}
-	const qs = sp.toString();
-	return qs ? `?${qs}` : "";
 }

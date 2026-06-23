@@ -44,7 +44,7 @@ export const KNOWN_VERSIONS: Partial<Record<D2LProduct, D2LVersion>> = {
 };
 
 /**
- * The minimum D2L API component versions brightspace-client has been
+ * The minimum D2L API component versions brightspace-lms has been
  * tested against. VersionResolver emits a warning when a host reports
  * a version below these floors.
  *

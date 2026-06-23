@@ -6,6 +6,7 @@ import type {
 	VersionCheckResult,
 	VersionSpec,
 } from "../types";
+import type { HttpClient } from "./http-client";
 
 /**
  * Resolves and negotiates D2L API component versions.
@@ -20,10 +21,6 @@ import type {
  *
  * @see https://docs.valence.desire2learn.com/basic/version.html
  */
-
-interface VersionHttpClient {
-	post<T>(path: string, body?: unknown): Promise<T>;
-}
 
 export class VersionResolver {
 	private negotiated = new Map<D2LProduct, D2LVersion>();
@@ -49,7 +46,7 @@ export class VersionResolver {
 			}));
 	}
 
-	async check(client: VersionHttpClient): Promise<VersionCheckResult> {
+	async check(client: HttpClient): Promise<VersionCheckResult> {
 		const specs = this.buildRequestedSpecs();
 		// Note: this path is NOT built through path() - the versions endpoint
 		// lives at /d2l/api/versions/check with no product/version segment.
@@ -92,7 +89,7 @@ export class VersionResolver {
 					compareVersions(version.Version, version.LatestVersion) < 0
 				) {
 					console.warn(
-						`[brightspace-client] A newer version of ${version.ProductCode} is available on this host (using ${version.Version}, latest is ${version.LatestVersion}). Consider updating brightspace-client.`
+						`[brightspace-lms] A newer version of ${version.ProductCode} is available on this host (using ${version.Version}, latest is ${version.LatestVersion}). Consider updating brightspace-lms.`
 					);
 				}
 			} else if (version.LatestVersion) {
@@ -101,7 +98,7 @@ export class VersionResolver {
 				// this is an untested version and may behave unexpectedly.
 				this.negotiated.set(version.ProductCode, version.LatestVersion);
 				console.warn(
-					`[brightspace-client] ${version.ProductCode}@${version.Version} is not supported by this host. Falling back to ${version.LatestVersion} - this version has not been tested by brightspace-client. Some features may not work correctly.`
+					`[brightspace-lms] ${version.ProductCode}@${version.Version} is not supported by this host. Falling back to ${version.LatestVersion} - this version has not been tested by brightspace-lms. Some features may not work correctly.`
 				);
 			}
 
@@ -110,7 +107,7 @@ export class VersionResolver {
 			const floor = MIN_TESTED_VERSIONS[version.ProductCode];
 			if (floor && compareVersions(version.Version, floor) < 0) {
 				console.warn(
-					`[brightspace-client] ${version.ProductCode}@${version.Version} is below the tested floor (${floor}). Behaviour may be unpredictable on older API contracts.`
+					`[brightspace-lms] ${version.ProductCode}@${version.Version} is below the tested floor (${floor}). Behaviour may be unpredictable on older API contracts.`
 				);
 			}
 		}

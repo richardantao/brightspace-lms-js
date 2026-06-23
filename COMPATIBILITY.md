@@ -1,12 +1,12 @@
 # Compatibility
 
-This document tracks the D2L Brightspace API component versions that `brightspace-client` targets, and the LMS platform versions they have been tested against.
+This document tracks the D2L Brightspace API component versions that `brightspace-lms` targets, and the LMS platform versions they have been tested against.
 
 ---
 
 ## Version matrix
 
-| `brightspace-client` | D2L `lp` | D2L `le` | D2L `ep` | D2L `bas` | Oldest supported LMS |
+| `brightspace-lms` | D2L `lp` | D2L `le` | D2L `ep` | D2L `bas` | Oldest supported LMS |
 |---|---|---|---|---|---|
 | `1.x` | `≥ 1.49` | `≥ 1.82` | `≥ 2.5` | `≥ 1.4` | 20.25.x |
 
@@ -37,7 +37,7 @@ When D2L publishes new release notes:
 1. Check [https://docs.valence.desire2learn.com/about.html](https://docs.valence.desire2learn.com/about.html) for the updated deprecation table.
 2. Update `src/core/constants.ts` — `KNOWN_VERSIONS` and `MIN_TESTED_VERSIONS` — to reflect the new oldest fully supported versions.
 3. Update the deprecation table above.
-4. Update the version matrix with the new `brightspace-client` release row.
+4. Update the version matrix with the new `brightspace-lms` release row.
 5. Run the integration test suite against a real Brightspace host to confirm the updated versions work as expected before publishing.
 
 ---

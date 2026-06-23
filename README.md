@@ -1,6 +1,6 @@
-# brightspace-client
+# brightspace-lms
 
-A typed TypeScript client for the [D2L Brightspace Valence REST API](https://docs.valence.desire2learn.com), built with the same design philosophy as the Stripe SDK — HTTP is an implementation detail, not your problem.
+A community maintained TypeScript client for the [D2L Brightspace Valence REST API](https://docs.valence.desire2learn.com), encapsulating authentication, version checking and negotiation, and resource modifications.
 
 ```ts
 const me = await client.users.whoami();
@@ -12,18 +12,18 @@ const grades = await client.grades.listObjects(courseId);
 
 ## Why this exists
 
-D2L's Valence API is capable but developer-unfriendly by modern standards: no typed SDK, manual pagination, version negotiation on every deployment, and auth complexity that varies by institution. This library closes that gap.
+This library exists to improve the usability of the D2L Valence API, by encapsulating the docs and the internal wiring in one place, so developers can call simple, typed methods in their apps while the client handles the underlying API mechanics.
 
-It was built to power [Vita Learning](https://vitalearning.ca), an AI-native study platform for university students. The library is used in production and maintained accordingly.
+It was originally built to power [Vita Learning](https://vitalearning.ca), an AI-native study platform for university students. The library is used in production and maintained accordingly.
 
 ---
 
 ## Installation
 
 ```bash
-npm install brightspace-client
+npm install brightspace-lms
 # or
-pnpm add brightspace-client
+pnpm add brightspace-lms
 ```
 
 **Requirements:** Node.js 18+ (uses native `fetch` and `crypto.randomUUID`)
@@ -33,14 +33,11 @@ pnpm add brightspace-client
 ## Quick start
 
 ```ts
-import { BrightspaceClient, BearerTokenClient } from "brightspace-client";
+import { BrightspaceClient, BearerTokenClient } from "brightspace-lms";
 
 const client = new BrightspaceClient({
   host: "https://your-org.brightspace.com",
-  auth: new BearerTokenClient({
-    type: "bearer",
-    token: process.env.BRIGHTSPACE_TOKEN!,
-  }),
+  auth: new BearerTokenClient({ token: process.env.BRIGHTSPACE_TOKEN! }),
 });
 
 const me = await client.users.whoami();
@@ -56,10 +53,7 @@ console.log(`Hello, ${me.FirstName}`);
 Use when you already have a valid access token — the simplest option for server-side scripts.
 
 ```ts
-auth: new BearerTokenClient({
-  type: "bearer",
-  token: process.env.BRIGHTSPACE_TOKEN!,
-})
+auth: new BearerTokenClient({ token: process.env.BRIGHTSPACE_TOKEN! })
 ```
 
 ### OAuth2 — Authorization Code Grant
@@ -69,10 +63,9 @@ For user-delegated access. Use `OAuth2AuthorizationCodeClient` — construct one
 **Returning session** — you have a `refreshToken` stored from a previous session:
 
 ```ts
-import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-client";
+import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-lms";
 
 const auth = new OAuth2AuthorizationCodeClient({
-  type: "oauth2_authorization_code",
   clientId: process.env.D2L_CLIENT_ID!,
   clientSecret: process.env.D2L_CLIENT_SECRET!,
   redirectUri: "https://app.example.com/oauth/callback",
@@ -88,10 +81,9 @@ const me = await client.users.whoami();
 **Fresh auth** — the user hasn't authorized yet:
 
 ```ts
-import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-client";
+import { OAuth2AuthorizationCodeClient, BrightspaceClient } from "brightspace-lms";
 
 const authConfig = {
-  type: "oauth2_authorization_code" as const,
   clientId: process.env.D2L_CLIENT_ID!,
   clientSecret: process.env.D2L_CLIENT_SECRET!,
   redirectUri: "https://app.example.com/oauth/callback",
@@ -123,11 +115,10 @@ For server-to-server integrations. Use `OAuth2ClientCredentialsClient` — safe 
 D2L's client credentials flow uses JWT client assertions signed with a private key (not a client secret). Your JWKS URL must be publicly reachable over HTTPS.
 
 ```ts
-import { OAuth2ClientCredentialsClient, BrightspaceClient } from "brightspace-client";
+import { OAuth2ClientCredentialsClient, BrightspaceClient } from "brightspace-lms";
 
 // Module level — safe to share across requests
 const auth = new OAuth2ClientCredentialsClient({
-  type: "oauth2_client_credentials",
   clientId: process.env.D2L_CLIENT_ID!,
   privateKey: process.env.D2L_PRIVATE_KEY_PEM!,
   keyId: process.env.D2L_KEY_ID!,
@@ -188,9 +179,25 @@ The library targets the oldest fully supported contract versions per D2L's depre
 |---|---|---|
 | `client.users` | `lp` | whoami, retrieve, list, create, update, del, activation, names, pronouns, password |
 | `client.enrollments` | `lp` | listMyCourses, listOrgUnitUsers, listUserEnrollments, retrieveClasslist, create, del, completion |
+| `client.orgUnits` | `lp` | retrieve, list, create, update, del, ancestors, descendants, parents, children, types, recycle bin |
 | `client.courses` | `lp` | retrieve, list, create, update, del, templates, bulk updater |
-| `client.grades` | `le` | objects (retrieve/list/create/update/del), values (retrieve/list/update/del), categories, schemes |
-| `client.versions` | — | check, getSupportedVersions |
+| `client.grades` | `le` | objects, values, categories, schemes |
+| `client.quizzes` | `le` | retrieve, list, create, update, del, attempts, categories |
+| `client.dropboxes` | `le` | folders, submissions, feedback, categories |
+| `client.assessments` | `le` | rubrics, assessments (LE API v1.93+) |
+| `client.calendar` | `le` | events, occurrences, presenters |
+| `client.discussions` | `le` | forums, topics, posts, statistics |
+| `client.content` | `le` | modules, topics, table of contents, user progress |
+| `client.groups` | `lp` | group categories, groups, enrollments, sections |
+| `client.surveys` | `le` | surveys, attempts, categories, special access |
+| `client.news` | `le` / `lp` | news items, user feed, sharing rules |
+| `client.checklists` | `le` | checklists, categories, items |
+| `client.outcomes` | `le` | org-level sets, org-unit sets, alignments, import/export |
+| `client.awards` | `bas` | library, associations, issued awards |
+| `client.releaseConditions` | `le` | conditions for content, discussions, quizzes, dropboxes |
+| `client.demographics` | `lp` | fields, data types, user entries |
+| `client.accommodations` | `le` | quizzing accommodations per user and org unit |
+| `client.versions` | — | version check and negotiation |
 
 ```ts
 // Users
@@ -301,7 +308,7 @@ import {
   isRateLimitError,
   isVersionError,
   BrightspaceError,
-} from "brightspace-client";
+} from "brightspace-lms";
 
 try {
   await client.users.whoami();
@@ -328,7 +335,7 @@ The client automatically retries 5xx and 429 responses with exponential backoff 
 
 ## Compatibility
 
-| `brightspace-client` | D2L `lp` | D2L `le` | Oldest supported LMS |
+| `brightspace-lms` | D2L `lp` | D2L `le` | Oldest supported LMS |
 |---|---|---|---|
 | `1.x` | `≥ 1.49` | `≥ 1.82` | 20.25.x |
 
@@ -339,6 +346,61 @@ See [COMPATIBILITY.md](./COMPATIBILITY.md) for the full version matrix and depre
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+---
+
+## API Coverage
+
+Coverage of the D2L Brightspace Valence API. Resources marked out of scope are accessible via `client.raw` or `client.extend()`.
+
+### Implemented
+
+| Resource | Namespace | D2L docs |
+|---|---|---|
+| Users | `client.users` | [res/user.html](https://docs.valence.desire2learn.com/res/user.html) |
+| Enrollments | `client.enrollments` | [res/enroll.html](https://docs.valence.desire2learn.com/res/enroll.html) |
+| Org units & structure | `client.orgUnits` | [res/orgunit.html](https://docs.valence.desire2learn.com/res/orgunit.html) |
+| Course offerings & templates | `client.courses` | [res/course.html](https://docs.valence.desire2learn.com/res/course.html) |
+| Grades & schemes | `client.grades` | [res/grade.html](https://docs.valence.desire2learn.com/res/grade.html) |
+| Quizzes & attempts | `client.quizzes` | [res/quiz.html](https://docs.valence.desire2learn.com/res/quiz.html) |
+| Dropboxes & submissions | `client.dropboxes` | [res/dropbox.html](https://docs.valence.desire2learn.com/res/dropbox.html) |
+| Assessments & rubrics | `client.assessments` | [res/assessment.html](https://docs.valence.desire2learn.com/res/assessment.html) |
+| Calendar & events | `client.calendar` | [res/calendar.html](https://docs.valence.desire2learn.com/res/calendar.html) |
+| Discussions & forums | `client.discussions` | [res/discuss.html](https://docs.valence.desire2learn.com/res/discuss.html) |
+| Course content | `client.content` | [res/content.html](https://docs.valence.desire2learn.com/res/content.html) |
+| Groups & sections | `client.groups` | [res/groups.html](https://docs.valence.desire2learn.com/res/groups.html) |
+| Surveys | `client.surveys` | [res/survey.html](https://docs.valence.desire2learn.com/res/survey.html) |
+| News & announcements | `client.news` | [res/news.html](https://docs.valence.desire2learn.com/res/news.html) |
+| Checklists | `client.checklists` | [res/checklist.html](https://docs.valence.desire2learn.com/res/checklist.html) |
+| Learning Outcomes | `client.outcomes` | [res/outcomes.html](https://docs.valence.desire2learn.com/res/outcomes.html) |
+| Awards & badges | `client.awards` | [res/awards.html](https://docs.valence.desire2learn.com/res/awards.html) |
+| Release conditions | `client.releaseConditions` | [res/releaseconditions.html](https://docs.valence.desire2learn.com/res/releaseconditions.html) |
+| Demographics | `client.demographics` | [res/demographics.html](https://docs.valence.desire2learn.com/res/demographics.html) |
+| Accommodations | `client.accommodations` | [res/accommodations.html](https://docs.valence.desire2learn.com/res/accommodations.html) |
+| Version negotiation | `client.versions` | [basic/version.html](https://docs.valence.desire2learn.com/basic/version.html) |
+
+
+---
+
+
+---
+
+### Out of scope
+
+These resource groups are either highly institution-specific, require elevated admin access, or cover niche use cases unlikely to benefit from a typed SDK wrapper. They remain accessible via `client.raw` or `client.extend()`.
+
+| Resource | D2L docs | Reason |
+|---|---|---|
+| ePortfolio | [res/epobject.html](https://docs.valence.desire2learn.com/res/epobject.html) | Large surface, niche use, separate `ep` product component |
+| LTI Advantage assets | [res/ltiadvantage.html](https://docs.valence.desire2learn.com/res/ltiadvantage.html) | LTI tooling is a separate integration concern |
+| LTI legacy assets | [res/lti.html](https://docs.valence.desire2learn.com/res/lti.html) | Deprecated protocol |
+| Data Hub / Data Export | [res/dataExport.html](https://docs.valence.desire2learn.com/res/dataExport.html) | Bulk export, not a request/response API |
+| IPSIS SIS integration | [res/ipsis.html](https://docs.valence.desire2learn.com/res/ipsis.html) | SIS-specific, institution-level admin only |
+| Tools management | [res/tools.html](https://docs.valence.desire2learn.com/res/tools.html) | Platform admin surface, not course-level |
+| Configuration variables | [res/config.html](https://docs.valence.desire2learn.com/res/config.html) | Platform admin surface |
+| Permissions | [res/permissions.html](https://docs.valence.desire2learn.com/res/permissions.html) | Role permission management, admin-only |
+| Learning repository | [res/lor.html](https://docs.valence.desire2learn.com/res/lor.html) | Separate `lr` product, limited adoption |
+| Locales & time zones | [res/locale.html](https://docs.valence.desire2learn.com/res/locale.html) | Static reference data, not a resource API |
 
 ---
 

@@ -18,6 +18,17 @@ import { DropboxesResource } from "./resources/dropboxes";
 import { AssessmentsResource } from "./resources/assessments";
 import { CalendarResource } from "./resources/calendar";
 import { OrgUnitsResource } from "./resources/org-units";
+import { DiscussionsResource } from "./resources/discussions";
+import { SurveysResource } from "./resources/surveys";
+import { GroupsResource } from "./resources/groups";
+import { ChecklistsResource } from "./resources/checklists";
+import { ContentResource } from "./resources/content";
+import { NewsResource } from "./resources/news";
+import { OutcomesResource } from "./resources/outcomes";
+import { AwardsResource } from "./resources/awards";
+import { ReleaseConditionsResource } from "./resources/release-conditions";
+import { DemographicsResource } from "./resources/demographics";
+import { AccommodationsResource } from "./resources/accommodations";
 
 /**
  * Extends BrightspaceClientConfig to accept either a plain AuthConfig object
@@ -118,6 +129,17 @@ export class BrightspaceClient {
 	readonly assessments: AssessmentsResource;
 	readonly calendar: CalendarResource;
 	readonly orgUnits: OrgUnitsResource;
+	readonly discussions: DiscussionsResource;
+	readonly surveys: SurveysResource;
+	readonly groups: GroupsResource;
+	readonly checklists: ChecklistsResource;
+	readonly content: ContentResource;
+	readonly news: NewsResource;
+	readonly outcomes: OutcomesResource;
+	readonly awards: AwardsResource;
+	readonly releaseConditions: ReleaseConditionsResource;
+	readonly demographics: DemographicsResource;
+	readonly accommodations: AccommodationsResource;
 	readonly raw: RawClient;
 
 	constructor(options: BrightspaceClientOptions) {
@@ -205,6 +227,61 @@ export class BrightspaceClient {
 			ensureVersionsChecked
 		);
 		this.orgUnits = new OrgUnitsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.discussions = new DiscussionsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.surveys = new SurveysResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.groups = new GroupsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.checklists = new ChecklistsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.content = new ContentResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.news = new NewsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.outcomes = new OutcomesResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.awards = new AwardsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.releaseConditions = new ReleaseConditionsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.demographics = new DemographicsResource(
+			this.http,
+			this.versionsResolver,
+			ensureVersionsChecked
+		);
+		this.accommodations = new AccommodationsResource(
 			this.http,
 			this.versionsResolver,
 			ensureVersionsChecked

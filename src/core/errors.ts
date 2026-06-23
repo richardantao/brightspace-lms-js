@@ -1,5 +1,5 @@
 /**
- * Error classes for brightspace-client.
+ * Error classes for brightspace-lms.
  *
  * Grounded in D2L Valence API calling conventions:
  * @see https://docs.valence.desire2learn.com/basic/apicall.html#disposition-and-error-handling
@@ -13,7 +13,7 @@
  */
 
 /**
- * All errors thrown by brightspace-client extend BrightspaceError.
+ * All errors thrown by brightspace-lms extend BrightspaceError.
  * Consumers can use `instanceof BrightspaceError` to distinguish library
  * errors from unrelated runtime errors.
  */

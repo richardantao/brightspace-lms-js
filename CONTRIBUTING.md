@@ -1,4 +1,4 @@
-# Contributing to brightspace-client
+# Contributing to brightspace-lms
 
 Thanks for your interest in contributing. This library was built by a solo developer to fill a real gap in the Brightspace ecosystem — a gap D2L knows about but hasn't prioritized closing. The long-term goal is to build enough community adoption and code quality to make this the natural choice for any developer building on Brightspace, and eventually to offer co-maintenance or transfer to D2L's developer platform team.
 
@@ -33,8 +33,8 @@ For new resource implementations, comment on the relevant tracking issue (or ope
 ## Development setup
 
 ```bash
-git clone https://github.com/richardantao/brightspace-client
-cd brightspace-client
+git clone https://github.com/richardantao/brightspace-lms
+cd brightspace-lms
 pnpm install
 pnpm build
 pnpm test
@@ -145,4 +145,4 @@ The library targets the oldest fully supported D2L API contract versions per D2L
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/richardantao/brightspace-client/discussions) for anything that isn't a bug or a feature request. For D2L API questions, the [D2L Community developer forum](https://community.d2l.com/brightspace/group/29-developers) is the right place.
+Open a [GitHub Discussion](https://github.com/richardantao/brightspace-lms/discussions) for anything that isn't a bug or a feature request. For D2L API questions, the [D2L Community developer forum](https://community.d2l.com/brightspace/group/29-developers) is the right place.

@@ -1,5 +1,5 @@
 {
-	"name": "brightspace-client",
+	"name": "brightspace-lms",
 	"version": "0.1.0",
 	"description": "API client wrapper to D2L's Brightspace REST API.",
 	"keywords": [
@@ -10,13 +10,13 @@
 		"wrapper",
 		"REST"
 	],
-	"homepage": "https://github.com/richardantao/brightspace-client-js#readme",
+	"homepage": "https://github.com/richardantao/brightspace-lms-js#readme",
 	"bugs": {
-		"url": "https://github.com/richardantao/brightspace-client-js/issues"
+		"url": "https://github.com/richardantao/brightspace-lms-js/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/richardantao/brightspace-client-js.git"
+		"url": "git+https://github.com/richardantao/brightspace-lms-js.git"
 	},
 	"license": "MIT",
 	"author": "Richard Antao",
